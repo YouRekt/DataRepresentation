@@ -1,0 +1,327 @@
+{
+  "overview": {
+    "n_records": 5574,
+    "label_counts": {
+      "ham": 4827,
+      "spam": 747
+    },
+    "spam_share": 0.134,
+    "missing_or_empty": 0,
+    "leading_or_trailing_space": 187,
+    "chars_min_max": [
+      2,
+      910
+    ],
+    "emoji_messages": 0
+  },
+  "duplicates": {
+    "unique_texts": 5171,
+    "redundant_exact_rows": 403,
+    "redundant_exact_by_label": {
+      "ham": 309,
+      "spam": 94
+    },
+    "redundant_exact_share_of_label": {
+      "ham": 0.064,
+      "spam": 0.1258
+    },
+    "texts_with_conflicting_labels": 0,
+    "unique_after_lowercase_punct_digit_normalisation": 5103,
+    "near_dup_groups": 4897,
+    "records_in_multi_groups_by_label": {
+      "ham": 633,
+      "spam": 428
+    },
+    "top_repeated": {
+      "Sorry, I'll call later": 30,
+      "I cant pick the phone right now. Pls send a message": 12,
+      "Ok...": 10,
+      "Please call our customer service representative on FREEPHONE 0808 145 4742 between 9am-11pm as you have WON a guaranteed £1000 cash or £5000 prize!": 4,
+      "Wen ur lovable bcums angry wid u, dnt take it seriously.. Coz being angry is d most childish n true way of showing deep affection, care n luv!.. kettoda manda... Have nice day da.": 4
+    }
+  },
+  "split": {
+    "train": {
+      "ham": 3378,
+      "spam": 522,
+      "total": 3900,
+      "spam_share": 0.1338
+    },
+    "val": {
+      "ham": 725,
+      "spam": 112,
+      "total": 837,
+      "spam_share": 0.1338
+    },
+    "test": {
+      "ham": 724,
+      "spam": 113,
+      "total": 837,
+      "spam_share": 0.135
+    }
+  },
+  "lengths_train": {
+    "ham": {
+      "chars_median": 53.0,
+      "chars_q1_q3": [
+        34.0,
+        94.75
+      ],
+      "words_median": 11.0,
+      "share_120_to_160_chars": 0.13,
+      "share_over_160_chars": 0.0459
+    },
+    "spam": {
+      "chars_median": 149.0,
+      "chars_q1_q3": [
+        134.0,
+        157.0
+      ],
+      "words_median": 25.0,
+      "share_120_to_160_chars": 0.7471,
+      "share_over_160_chars": 0.0881
+    }
+  },
+  "markers_train": {
+    "Numer telefonu (>= 8 cyfr)": {
+      "ham": 0.0006,
+      "spam": 0.6149
+    },
+    "Kod krótki (5-6 cyfr)": {
+      "ham": 0.0,
+      "spam": 0.341
+    },
+    "Kwota (£, $, 150p)": {
+      "ham": 0.0033,
+      "spam": 0.5172
+    },
+    "URL / domena": {
+      "ham": 0.0033,
+      "spam": 0.182
+    },
+    "Encja HTML (&lt; &gt; &amp;)": {
+      "ham": 0.0672,
+      "spam": 0.0
+    },
+    "Emotikona :) ;-)": {
+      "ham": 0.0332,
+      "spam": 0.0
+    },
+    "Wielokropek / !!! / ???": {
+      "ham": 0.1569,
+      "spam": 0.0172
+    },
+    "Powtórzona litera (sooo)": {
+      "ham": 0.0231,
+      "spam": 0.0287
+    },
+    "Znak C1 z cp1252 (\\x92)": {
+      "ham": 0.0077,
+      "spam": 0.0038
+    }
+  },
+  "uppercase_heavy_train": {
+    "ham": 0.0231,
+    "spam": 0.0307
+  },
+  "oov_train_to_val": {
+    "ham": {
+      "token_oov_rate": 0.0677,
+      "long_number_tokens": 0,
+      "long_number_oov_rate": 0.0
+    },
+    "spam": {
+      "token_oov_rate": 0.1268,
+      "long_number_tokens": 98,
+      "long_number_oov_rate": 0.7143
+    },
+    "val_spam_with_phone": 0.4911,
+    "val_spam_with_phone_all_unseen_in_train": 0.8545
+  },
+  "discriminative_tokens": {
+    "spam": [
+      {
+        "token": "claim",
+        "spam_df": 70,
+        "ham_df": 0,
+        "log_ratio": 6.13
+      },
+      {
+        "token": "prize",
+        "spam_df": 52,
+        "ham_df": 0,
+        "log_ratio": 5.83
+      },
+      {
+        "token": "150p",
+        "spam_df": 48,
+        "ham_df": 0,
+        "log_ratio": 5.76
+      },
+      {
+        "token": "18",
+        "spam_df": 40,
+        "ham_df": 0,
+        "log_ratio": 5.58
+      },
+      {
+        "token": "tone",
+        "spam_df": 38,
+        "ham_df": 0,
+        "log_ratio": 5.53
+      },
+      {
+        "token": "guaranteed",
+        "spam_df": 34,
+        "ham_df": 0,
+        "log_ratio": 5.42
+      },
+      {
+        "token": "500",
+        "spam_df": 33,
+        "ham_df": 0,
+        "log_ratio": 5.39
+      },
+      {
+        "token": "cs",
+        "spam_df": 31,
+        "ham_df": 0,
+        "log_ratio": 5.33
+      },
+      {
+        "token": "code",
+        "spam_df": 27,
+        "ham_df": 0,
+        "log_ratio": 5.2
+      },
+      {
+        "token": "awarded",
+        "spam_df": 27,
+        "ham_df": 0,
+        "log_ratio": 5.2
+      },
+      {
+        "token": "1000",
+        "spam_df": 26,
+        "ham_df": 0,
+        "log_ratio": 5.16
+      },
+      {
+        "token": "uk",
+        "spam_df": 50,
+        "ham_df": 1,
+        "log_ratio": 5.1
+      },
+      {
+        "token": "ringtone",
+        "spam_df": 24,
+        "ham_df": 0,
+        "log_ratio": 5.08
+      },
+      {
+        "token": "mob",
+        "spam_df": 24,
+        "ham_df": 0,
+        "log_ratio": 5.08
+      },
+      {
+        "token": "100",
+        "spam_df": 23,
+        "ham_df": 0,
+        "log_ratio": 5.04
+      }
+    ],
+    "ham": [
+      {
+        "token": "gt",
+        "spam_df": 0,
+        "ham_df": 177,
+        "log_ratio": -3.32
+      },
+      {
+        "token": "lt",
+        "spam_df": 0,
+        "ham_df": 175,
+        "log_ratio": -3.31
+      },
+      {
+        "token": "he",
+        "spam_df": 0,
+        "ham_df": 126,
+        "log_ratio": -2.98
+      },
+      {
+        "token": "lor",
+        "spam_df": 0,
+        "ham_df": 100,
+        "log_ratio": -2.75
+      },
+      {
+        "token": "da",
+        "spam_df": 0,
+        "ham_df": 95,
+        "log_ratio": -2.7
+      },
+      {
+        "token": "she",
+        "spam_df": 0,
+        "ham_df": 87,
+        "log_ratio": -2.61
+      },
+      {
+        "token": "hope",
+        "spam_df": 0,
+        "ham_df": 79,
+        "log_ratio": -2.52
+      },
+      {
+        "token": "much",
+        "spam_df": 0,
+        "ham_df": 79,
+        "log_ratio": -2.52
+      },
+      {
+        "token": "come",
+        "spam_df": 1,
+        "ham_df": 152,
+        "log_ratio": -2.47
+      },
+      {
+        "token": "ask",
+        "spam_df": 0,
+        "ham_df": 65,
+        "log_ratio": -2.33
+      },
+      {
+        "token": "doing",
+        "spam_df": 0,
+        "ham_df": 64,
+        "log_ratio": -2.31
+      },
+      {
+        "token": "home",
+        "spam_df": 1,
+        "ham_df": 115,
+        "log_ratio": -2.2
+      },
+      {
+        "token": "later",
+        "spam_df": 0,
+        "ham_df": 55,
+        "log_ratio": -2.16
+      },
+      {
+        "token": "yeah",
+        "spam_df": 0,
+        "ham_df": 55,
+        "log_ratio": -2.16
+      },
+      {
+        "token": "amp",
+        "spam_df": 0,
+        "ham_df": 55,
+        "log_ratio": -2.16
+      }
+    ]
+  }
+}
