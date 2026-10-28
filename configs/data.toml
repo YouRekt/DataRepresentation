@@ -1,0 +1,27 @@
+# Source, split and near-duplicate settings shared by every experiment variant.
+
+[source]
+name = "SMS Spam Collection v.1"
+uci_id = 228
+url = "https://archive.ics.uci.edu/static/public/228/sms+spam+collection.zip"
+member = "SMSSpamCollection"
+# SHA-256 of the extracted SMSSpamCollection file (5574 lines, mtime 2011-03-15).
+file_sha256 = "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d"
+license = "CC BY 4.0"
+downloaded = "2026-10-29"
+
+[split]
+seed = 42
+train = 0.70
+val = 0.15
+test = 0.15
+# StratifiedGroupKFold folds; each fold holds ~5% of the data.
+n_folds = 20
+
+[near_dup]
+# Records whose char n-gram TF-IDF cosine similarity reaches the threshold are
+# linked; connected components become split groups.
+analyzer = "char_wb"
+ngram_min = 3
+ngram_max = 5
+threshold = 0.7

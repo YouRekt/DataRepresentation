@@ -1,0 +1,71 @@
+{
+  "source": {
+    "name": "SMS Spam Collection v.1",
+    "uci_id": 228,
+    "url": "https://archive.ics.uci.edu/static/public/228/sms+spam+collection.zip",
+    "member": "SMSSpamCollection",
+    "file_sha256": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+    "license": "CC BY 4.0",
+    "downloaded": "2026-10-29"
+  },
+  "split_config": {
+    "seed": 42,
+    "train": 0.7,
+    "val": 0.15,
+    "test": 0.15,
+    "n_folds": 20
+  },
+  "near_dup_config": {
+    "analyzer": "char_wb",
+    "ngram_min": 3,
+    "ngram_max": 5,
+    "threshold": 0.7
+  },
+  "n_records": 5574,
+  "counts": {
+    "test": {
+      "ham": 724,
+      "spam": 113
+    },
+    "train": {
+      "ham": 3378,
+      "spam": 522
+    },
+    "val": {
+      "ham": 725,
+      "spam": 112
+    }
+  },
+  "spam_share": {
+    "test": 0.135,
+    "train": 0.1338,
+    "val": 0.1338
+  },
+  "n_groups": 4897,
+  "records_in_multi_groups": 1061,
+  "largest_group": 40,
+  "held_out_max_sim_to_train": {
+    "median": 0.3058,
+    "counts": {
+      ">=0.5": {
+        "val": 98,
+        "test": 120
+      },
+      ">=0.6": {
+        "val": 33,
+        "test": 49
+      },
+      ">=0.7": {
+        "val": 0,
+        "test": 0
+      }
+    }
+  },
+  "environment": {
+    "python": "3.14.8",
+    "numpy": "2.5.4",
+    "pandas": "3.1.0",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1"
+  }
+}
