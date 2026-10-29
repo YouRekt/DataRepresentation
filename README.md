@@ -23,6 +23,7 @@ Identyfikator rekordu `id` to numer linii (od 0) w oryginalnym pliku.
 uv sync
 uv run python -m smsspam.split   # pobiera dane, grupuje bliskie duplikaty, zapisuje podział
 uv run python -m smsspam.eda     # tabele i wykresy do reports/milestone1/
+tectonic reports/milestone1/slides.tex   # slajdy Beamer -> reports/milestone1/slides.pdf
 ```
 
 ## Podział danych (zamrożony)
