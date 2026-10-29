@@ -164,13 +164,13 @@ def style(ax: plt.Axes) -> None:
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
     ax.spines["bottom"].set_color(GRID)
-    ax.tick_params(colors=INK_2, labelsize=10, length=0)
+    ax.tick_params(colors=INK_2, labelsize=13, length=0)
     ax.grid(axis="x", color=GRID, linewidth=0.8)
     ax.set_axisbelow(True)
 
 
 def plot_lengths(train: pd.DataFrame) -> None:
-    fig, ax = plt.subplots(figsize=(8, 4.2), facecolor=SURFACE)
+    fig, ax = plt.subplots(figsize=(8, 4.4), facecolor=SURFACE)
     style(ax)
     ax.grid(axis="x", visible=False)
     ax.grid(axis="y", color=GRID, linewidth=0.8)
@@ -181,11 +181,11 @@ def plot_lengths(train: pd.DataFrame) -> None:
         weights = np.full(len(c), 100 / len(c))
         ax.hist(c, bins=bins, weights=weights, histtype="step", linewidth=2, color=COLORS[lab], label=f"{lab} (n={len(c)})")
     ax.axvline(160, color=INK_2, linewidth=1, linestyle=(0, (4, 3)))
-    ax.text(163, ax.get_ylim()[1] * 0.92, "limit 1 SMS = 160 znaków", color=INK_2, fontsize=9, va="top")
-    ax.set_xlabel("Długość wiadomości [znaki], zbiór treningowy (ostatni koszyk: ≥ 320)", color=INK_2, fontsize=10)
-    ax.set_ylabel("% wiadomości w klasie", color=INK_2, fontsize=10)
+    ax.text(163, ax.get_ylim()[1] * 0.92, "limit 1 SMS = 160 znaków", color=INK_2, fontsize=12, va="top")
+    ax.set_xlabel("Długość wiadomości [znaki], zbiór treningowy (ostatni koszyk: ≥ 320)", color=INK_2, fontsize=12.5)
+    ax.set_ylabel("% wiadomości w klasie", color=INK_2, fontsize=12.5)
     ax.set_xlim(0, bins[-1])
-    ax.legend(frameon=False, fontsize=10, labelcolor=INK, loc="upper right", bbox_to_anchor=(1, 0.8))
+    ax.legend(frameon=False, fontsize=13, labelcolor=INK, loc="upper right", bbox_to_anchor=(1, 0.8))
     fig.tight_layout()
     fig.savefig(OUT / "fig_length.png", dpi=200)
     plt.close(fig)
@@ -195,18 +195,18 @@ def plot_markers(prev: pd.DataFrame) -> None:
     prev = prev.assign(diff=prev.spam - prev.ham).sort_values("diff")
     y = np.arange(len(prev))
     h = 0.36
-    fig, ax = plt.subplots(figsize=(8, 4.8), facecolor=SURFACE)
+    fig, ax = plt.subplots(figsize=(8, 5), facecolor=SURFACE)
     style(ax)
     for offset, lab in ((h / 2 + 0.02, "spam"), (-h / 2 - 0.02, "ham")):
         vals = prev[lab].to_numpy() * 100
         ax.barh(y + offset, vals, height=h, color=COLORS[lab], label=lab)
         for yi, v in zip(y + offset, vals):
-            ax.text(v + 1, yi, f"{v:.1f}%", va="center", fontsize=8.5, color=INK_2)
+            ax.text(v + 1.2, yi, f"{v:.1f}%", va="center", fontsize=11.5, color=INK_2)
     ax.set_yticks(y, prev.marker, color=INK)
     ax.set_xlim(0, 100)
-    ax.set_xlabel("% wiadomości w klasie zawierających znacznik (zbiór treningowy)", color=INK_2, fontsize=10)
+    ax.set_xlabel("% wiadomości w klasie ze znacznikiem (zbiór treningowy)", color=INK_2, fontsize=12.5)
     handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles[::-1], labels[::-1], frameon=False, fontsize=10, loc="lower right", labelcolor=INK)
+    ax.legend(handles[::-1], labels[::-1], frameon=False, fontsize=13, loc="lower right", labelcolor=INK)
     fig.tight_layout()
     fig.savefig(OUT / "fig_markers.png", dpi=200)
     plt.close(fig)
