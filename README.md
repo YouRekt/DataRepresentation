@@ -21,10 +21,12 @@ Identyfikator rekordu `id` to numer linii (od 0) w oryginalnym pliku.
 
 ```bash
 uv sync
-uv run python -m smsspam.split   # pobiera dane, grupuje bliskie duplikaty, zapisuje podział
-uv run python -m smsspam.eda     # tabele i wykresy do reports/milestone1/
+# EDA, bliskie duplikaty, podział i wykresy (albo otwórz notebook w PyCharm / `uv run jupyter lab`)
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda.ipynb
 tectonic reports/milestone1/slides.tex   # slajdy Beamer -> reports/milestone1/slides.pdf
 ```
+
+Podział jest zamrożony: ponowne uruchomienie notebooka sprawdza, że wychodzi identyczny, i nie nadpisuje pliku.
 
 ## Podział danych (zamrożony)
 
@@ -43,12 +45,11 @@ Konfiguracja: `configs/data.toml`.
 
 ```
 configs/data.toml        źródło danych, seed, proporcje, próg bliskich duplikatów
+notebooks/01_eda.ipynb   EDA, bliskie duplikaty, podział, kontrola przecieku, hipotezy (Milestone 1)
 smsspam/data.py          pobranie + weryfikacja SHA-256, wczytanie, złączenie z podziałem
-smsspam/split.py         grupy bliskich duplikatów, podział, kontrola przecieku
 smsspam/patterns.py      wzorce (telefon, kod krótki, kwota, URL, ...) dla EDA i wariantów P
-smsspam/eda.py           EDA Milestone 1
 data/splits/             zamrożony podział (commitowany)
-reports/milestone1/      eda.md, summary.json, wykresy, notatka z hipotezami
+reports/milestone1/      wykresy, notatka z hipotezami, slajdy
 ```
 
 ## Narzędzia generatywne

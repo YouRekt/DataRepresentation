@@ -1,7 +1,6 @@
 # Milestone 1: dane, EDA, podział i hipotezy
 
-Liczby pochodzą z `eda.md` / `summary.json` (generowane przez `python -m smsspam.eda`) oraz
-`data/splits/split_seed42.meta.json`. Statystyki, na których opieramy hipotezy, liczymy tylko na treningu
+Liczby pochodzą z notebooka `notebooks/01_eda.ipynb` oraz `data/splits/split_seed42.meta.json`. Statystyki, na których opieramy hipotezy, liczymy tylko na treningu
 (słownictwo spoza słownika: train → val). Test nie wpływa na wybór wariantów.
 
 ## 1. Dane i etykiety
@@ -31,7 +30,7 @@ przy podziale. Dodatkowo raportujemy wynik na teście po deduplikacji (781 unika
 | val | 725 | 112 | 837 | 13,4% |
 | test | 724 | 113 | 837 | 13,5% |
 
-Kontrola przecieku (asercje w `smsspam/split.py`): żadna grupa ani dokładny tekst nie przechodzi między częściami;
+Kontrola przecieku (asercje w notebooku, sekcja 6): żadna grupa ani dokładny tekst nie przechodzi między częściami;
 0 rekordów val/test ma podobieństwo ≥ 0,7 do jakiegokolwiek rekordu treningowego.
 Pozostaje pasmo 0,5-0,7: 120 rekordów testu (79 ham, 41 spam). To głównie te same kampanie spamowe w innej wersji.
 Jest to realistyczne (kampanie wracają), ale może zawyżać wyniki, więc pokażemy też wynik na podzbiorze testu z podobieństwem < 0,5.
@@ -49,7 +48,7 @@ Jest to realistyczne (kampanie wracają), ale może zawyżać wyniki, więc poka
 | Powtórzona litera (`sooo`) | 2,3% | 2,9% |
 
 - Słownik B1 (z treningu) a walidacja: 71,4% tokenów liczbowych ≥ 5 cyfr ze spamu nie występuje w treningu.
-  W 85,5% spamów z walidacji z numerem telefonu **żaden** numer nie był widziany w treningu.
+  W 83,6% spamów z walidacji z numerem telefonu **żaden** numer nie był widziany w treningu.
 - Dwa najsilniejsze tokeny ham w tokenizacji B1 to `gt` (0/177) i `lt` (0/175): pozostałości po `&lt;#&gt;`,
   czyli placeholderze anonimizacji liczb w korpusie NUS, z którego pochodzi większość hamów. To artefakt zbierania danych, a nie cecha języka.
 

@@ -4,3 +4,4 @@ __pycache__/
 .idea/
 # Raw data is fetched and checksum-verified by smsspam.data.download().
 data/raw/
+.ipynb_checkpoints/
