@@ -39,7 +39,6 @@
         \item braki i puste: \textbf{0}
         \item emoji: \textbf{0} (rok 2011)
         \item 35 SMS-ów z błędnym cp1252
-        \item SHA-256 pliku zapisany
         \item \texttt{id} = nr linii pliku
       \end{itemize}
       \vspace{0.6em}
@@ -75,32 +74,14 @@
         test  &  724 & 113 &  837 & 13,5 \\
         \bottomrule
       \end{tabular}\\[0.8em]
-      {\small 70/15/15, StratifiedGroupKFold, seed 42\\
-      \texttt{data/splits/split\_seed42.csv}}\\[0.8em]
-      \alert{\textbf{0}} rekordów val/test z cos $\geq$ 0,7 do treningu
+      {\small 70/15/15, StratifiedGroupKFold, seed 42}
     \end{column}
   \end{columns}
 \end{frame}
 
 \begin{frame}{Co odróżnia spam od hamu (zbiór treningowy)}
-  \begin{columns}[T]
-    \begin{column}{0.6\textwidth}
-      \includegraphics[width=\linewidth]{fig_markers.png}
-    \end{column}
-    \begin{column}{0.38\textwidth}
-      \small
-      \begin{block}{Numery są silne, ale nowe}
-        W \alert{83,6\%} spamów z walidacji z numerem telefonu żaden numer nie wystąpił w treningu.
-      \end{block}
-      \begin{block}{Artefakt korpusu}
-        \texttt{gt} i \texttt{lt} (0 w spamie, $\approx$175 w hamie): ślad placeholdera \texttt{\&lt;\#\&gt;},
-        czyli ukryty brak danych z korpusu NUS.
-      \end{block}
-      \begin{block}{Interpunkcja to ham}
-        Wielokropki i emotikony są typowe dla hamu, ale tokenizer B1 je pomija.
-      \end{block}
-    \end{column}
-  \end{columns}
+  \centering
+  \includegraphics[width=\linewidth,height=0.82\textheight,keepaspectratio]{fig_markers.png}
 \end{frame}
 
 \begin{frame}{Trzy hipotezy: ten sam model B1, zmieniamy tylko tekst}
@@ -131,7 +112,6 @@
   \end{columns}
   \vspace{0.8em}
   Najpierw zmiany pojedyncze, potem połączenie najlepszych.
-  Opcjonalnie P4: dekodowanie encji HTML (usuwa skrót \texttt{lt}/\texttt{gt}).
 \end{frame}
 
 \begin{frame}{Problemy i plan na Milestone 2}
@@ -142,7 +122,6 @@
         \item Mały test: 113 spamów, więc 1 SMS $\approx$ 0,9 p.p. recall. Potrzebny sparowany bootstrap.
         \item 65 ze 113 spamów testu jest w grupach duplikatów. Raportujemy też test po deduplikacji (781 unikalnych).
         \item 41 spamów testu przypomina kampanie z treningu (cos 0,5--0,7). Pokażemy wynik na podzbiorze $<$ 0,5.
-        \item Do potwierdzenia: grupowanie zamiast deduplikacji, próg 0,7.
       \end{itemize}
     \end{column}
     \begin{column}{0.48\textwidth}
