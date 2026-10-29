@@ -94,8 +94,8 @@
         W \alert{83,6\%} spamów z walidacji z numerem telefonu żaden numer nie wystąpił w treningu.
       \end{block}
       \begin{block}{Artefakt korpusu}
-        \texttt{gt} i \texttt{lt} to dwa najsilniejsze tokeny hamu w B1: ślad placeholdera
-        \texttt{\&lt;\#\&gt;} z korpusu NUS.
+        \texttt{gt} i \texttt{lt} (0 w spamie, $\approx$175 w hamie): ślad placeholdera \texttt{\&lt;\#\&gt;},
+        czyli ukryty brak danych z korpusu NUS.
       \end{block}
       \begin{block}{Interpunkcja to ham}
         Wielokropki i emotikony są typowe dla hamu, ale tokenizer B1 je pomija.
@@ -110,7 +110,7 @@
     \begin{column}{0.32\textwidth}
       \begin{block}{P1: maskowanie numerów i kwot}
         \texttt{<PHONE> <SHORTCODE> <MONEY>}\\[0.4em]
-        \textbf{Dlaczego:} numer telefonu w 61,5\% spamu, ale 71\% długich liczb z walidacji jest spoza słownika.\\[0.4em]
+        \textbf{Dlaczego:} numer telefonu w 61,5\% spamu, ale 91\% długich liczb to kolumny BoW z $\leq$ 2 dokumentów.\\[0.4em]
         \textbf{Oczekujemy:} wyższego recall spamu i F1.\\[0.4em]
         \textbf{Ryzyko:} hamy z kwotami (\texttt{\$700}).
       \end{block}

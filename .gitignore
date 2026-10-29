@@ -5,3 +5,4 @@ __pycache__/
 # Raw data is fetched and checksum-verified by smsspam.data.download().
 data/raw/
 .ipynb_checkpoints/
+.DS_Store

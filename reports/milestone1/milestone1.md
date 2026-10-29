@@ -47,10 +47,10 @@ Jest to realistyczne (kampanie wracają), ale może zawyżać wyniki, więc poka
 | Wielokropek / `!!!` / `???` | 15,7% | 1,7% |
 | Powtórzona litera (`sooo`) | 2,3% | 2,9% |
 
-- Słownik B1 (z treningu) a walidacja: 71,4% tokenów liczbowych ≥ 5 cyfr ze spamu nie występuje w treningu.
+- W worku słów B1 długie liczby (≥ 8 cyfr) to w 91% kolumny obecne w najwyżej dwóch dokumentach treningu (wariancja bliska zeru).
   W 83,6% spamów z walidacji z numerem telefonu **żaden** numer nie był widziany w treningu.
-- Dwa najsilniejsze tokeny ham w tokenizacji B1 to `gt` (0/177) i `lt` (0/175): pozostałości po `&lt;#&gt;`,
-  czyli placeholderze anonimizacji liczb w korpusie NUS, z którego pochodzi większość hamów. To artefakt zbierania danych, a nie cecha języka.
+- Wśród najsilniejszych tokenów hamu w teście χ² są `gt` (0 spam / 177 ham) i `lt` (0/175): pozostałości po `&lt;#&gt;`,
+  czyli placeholderze anonimizacji liczb w korpusie NUS, z którego pochodzi większość hamów. To ukryty brak danych z jednego źródła, a nie cecha języka.
 
 ## 5. Hipotezy (warianty P przy tym samym modelu B1 i tych samych hiperparametrach)
 
