@@ -1,0 +1,366 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{polish}
+\setmainfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{ham}{HTML}{2A78D6}
+\definecolor{spam}{HTML}{B4451A}
+\definecolor{ink}{HTML}{1B1F24}
+
+\titleformat{\section}{\Large\bfseries\color{ink}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{spam}}{}{0em}{}
+\setlist{itemsep=2pt,topsep=3pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\newtcolorbox{pojecie}[1]{colback=ink!4,colframe=ink!40,boxrule=0.4pt,arc=2pt,
+  left=6pt,right=6pt,top=3pt,bottom=3pt,fonttitle=\bfseries\small,coltitle=ink,
+  colbacktitle=ink!12,title={#1},breakable}
+\newtcolorbox{uwaga}{colback=spam!6,colframe=spam!60,boxrule=0.4pt,arc=2pt,
+  left=6pt,right=6pt,top=3pt,bottom=3pt,breakable}
+\newcommand{\pyt}[1]{\par\medskip\textbf{\color{spam}P: #1}\par}
+\newcommand{\odp}{\textbf{O:}~}
+
+\begin{document}
+
+{\LARGE\bfseries Milestone 1 -- notatka dla zespołu\par}
+\vspace{2pt}
+{\large Wykrywanie spamu w SMS-ach: co jest na slajdach, co znaczą trudne słowa i o co mogą zapytać\par}
+\vspace{4pt}
+{\small Jerzy Czarnecki, Mateusz Małachowski, Sebastian Rydz, Wojciech Wójcik \quad·\quad 29.10.2026}
+
+\section{O co chodzi w projekcie (w dwóch zdaniach)}
+
+Mamy ok. 5,6 tys. SMS-ów, każdy oznaczony przez człowieka jako \textbf{spam} albo \textbf{ham}. Budujemy program, który
+sam zgaduje, czy SMS to spam, i sprawdzamy, \textbf{czy przerobienie tekstu przed nauką} (np. zamiana numerów telefonów na
+wspólny znacznik) \textbf{poprawia wynik}. Milestone 1 jest \emph{przed} jakimkolwiek modelem: obejrzeliśmy dane,
+podzieliliśmy je i postawiliśmy hipotezy.
+
+\textbf{Podział na trzy części} -- to trzeba rozumieć, żeby cokolwiek dalej miało sens:
+\begin{itemize}
+  \item \textbf{train (70\%)} -- na tym model się uczy,
+  \item \textbf{val / walidacja (15\%)} -- próbny sprawdzian; tu wybieramy ustawienia,
+  \item \textbf{test (15\%)} -- prawdziwy egzamin, używany \textbf{raz, na końcu}. Nie wolno na nim niczego dobierać.
+\end{itemize}
+\textbf{Przeciek (leakage)}: gdy ten sam (albo prawie ten sam) SMS jest i w treningu, i w teście -- model „zna odpowiedź
+na pamięć” i wynik wychodzi lepszy niż w rzeczywistości.
+
+\section{Slajd po slajdzie}
+
+\subsection{Slajd 1 -- tytułowy}
+Tytuł, skład, data. Nic do tłumaczenia.
+
+\subsection{Slajd 2 -- „Dane: 5574 SMS-y, 13,4\% spamu”}
+
+\begin{pojecie}{SMS Spam Collection v.1, UCI \#228, CC BY 4.0}
+Nazwa zbioru danych: jeden plik tekstowy, każda linia to etykieta + treść SMS-a, zebrany w 2011 r.
+\textbf{UCI} = UCI Machine Learning Repository (Uniwersytet Kalifornijski w Irvine) -- publiczna „biblioteka” zbiorów
+danych; \textbf{228} to numer zbioru w tej bibliotece. \textbf{CC BY 4.0} to licencja: wolno używać, trzeba podać autorów.
+\end{pojecie}
+
+\begin{pojecie}{ham / spam}
+\textbf{spam} -- niechciana wiadomość (reklama, „wygrałeś nagrodę, zadzwoń pod 0906…”).
+\textbf{ham} -- normalna wiadomość od człowieka („będę za 10 min”). Nazwa to żart: spam to marka mielonki,
+więc „dobra” wiadomość to szynka (ham). 4827 ham i 747 spam -- spamu jest tylko 13,4\%, czyli klasy są
+\textbf{niezbalansowane}.
+\end{pojecie}
+
+\begin{itemize}
+  \item \textbf{Braki i puste: 0} -- żaden SMS nie ma pustej treści ani brakującej etykiety.
+  \item \textbf{Emoji: 0 (rok 2011)} -- ówczesne telefony praktycznie ich nie wysyłały, więc eksperyment z emoji nie ma sensu.
+  \item \textbf{\texttt{id} = numer linii pliku} -- każdy SMS ma numer (linia w oryginalnym pliku, od 0). Prowadzący wymaga
+        zapisania identyfikatorów, żeby było wiadomo, który SMS trafił do testu.
+\end{itemize}
+
+\begin{pojecie}{35 SMS-ów z błędnym cp1252}
+Komputer nie przechowuje liter, tylko liczby. \textbf{Kodowanie znaków} to tabelka „liczba $\to$ litera”.
+\textbf{UTF-8} -- współczesny standard, w nim jest plik. \textbf{cp1252} (Windows-1252) -- stara tabelka Windowsa, w której
+liczba \texttt{0x92} to ładny apostrof \texttt{’}. W 35 SMS-ach nikt tego nie przekonwertował i zamiast apostrofu siedzi
+niewidoczny znak sterujący. Ciekawostka o jakości danych, nie poważny problem.
+\end{pojecie}
+
+\begin{pojecie}{Metryka główna: F1 dla klasy spam}
+Dlaczego nie zwykłe „\% trafień” (accuracy)? Bo „model”, który \emph{zawsze} mówi „ham”, ma 86,6\% trafień i nie łapie
+ani jednego spamu.
+\begin{itemize}
+  \item \textbf{precision (precyzja)} -- z tego, co model nazwał spamem, ile naprawdę było spamem. Niska = SMS-y od mamy lądują w spamie.
+  \item \textbf{recall (czułość)} -- z całego prawdziwego spamu, ile model złapał. Niski = spam przecieka.
+  \item \textbf{F1} -- średnia tych dwóch, która „karze”, gdy któraś jest niska. Od 0 do 1, im więcej, tym lepiej.
+\end{itemize}
+\end{pojecie}
+
+\textbf{Wykres długości.} Oś X -- długość SMS-a w znakach, oś Y -- jaki \% wiadomości ma taką długość; niebieski = ham,
+pomarańczowy = spam. Kreska na 160 znakach to \textbf{limit jednego SMS-a}. Spamerzy upychają treść pod limit
+(\textbf{mediana} 149 znaków, czyli połowa krótsza, połowa dłuższa), ludzie piszą krótko (mediana 53).
+
+\subsection{Slajd 3 -- „Duplikaty i podział bez przecieku”}
+
+\begin{itemize}
+  \item \textbf{403 dokładne duplikaty (7,2\%)} -- kopie słowo w słowo. Spam powtarza się 2× częściej, bo spamer wysyła to samo do wielu ludzi.
+  \item \textbf{0 tekstów z konfliktem etykiet} -- nie ma tekstu oznaczonego raz jako spam, a raz jako ham.
+\end{itemize}
+
+\textbf{Bliskie duplikaty} -- trudniejszy problem: „URGENT! You won £800, call 0906…1234” i „…£900, call 0906…9876” to
+ten sam szablon, choć nie słowo w słowo. Wykrywamy je tak:
+
+\begin{pojecie}{n-gramy znakowe 3--5}
+Kroimy tekst na kawałki po 3, 4 i 5 kolejnych liter. \texttt{call} $\to$ \texttt{\textvisiblespace ca}, \texttt{cal},
+\texttt{all}, \texttt{ll\textvisiblespace}, … (spacje na brzegach dokleja ustawienie \texttt{char\_wb} -- „w obrębie słowa”).
+Dwa SMS-y z tego samego szablonu mają prawie te same kawałki, nawet gdy różnią się numerem czy literówką.
+\end{pojecie}
+
+\begin{pojecie}{TF-IDF -- zamiana tekstu na liczby}
+Każdy możliwy kawałek (słowo albo n-gram) to kolumna tabeli, każdy SMS to wiersz liczb.
+\textbf{TF} (term frequency) -- ile razy kawałek jest w tym SMS-ie.
+\textbf{IDF} (inverse document frequency) -- kara za popularność: kawałek obecny prawie wszędzie dostaje małą wagę,
+rzadki -- dużą. \textbf{TF$\times$IDF} = ważne jest to, co jest w tym tekście, a nie jest wszędzie.
+\end{pojecie}
+
+\begin{pojecie}{Cosinus (podobieństwo kosinusowe)}
+Każdy SMS to teraz lista liczb, czyli strzałka. Cosinus kąta między dwiema strzałkami mówi, jak bardzo wskazują w tę samą
+stronę: \textbf{1} = prawie identyczne, \textbf{0} = nic wspólnego. Nie zależy od długości tekstu, tylko od kierunku.
+Przyjęliśmy \textbf{próg 0,7}: poniżej zaczynały się sklejać różne krótkie hamy („I'm home.” i „I'm at home. Please call”).
+\end{pojecie}
+
+\begin{itemize}
+  \item \textbf{4897 grup (największa: 40)} -- duplikaty łączymy łańcuchowo: A podobne do B, B do C $\Rightarrow$ A, B, C w jednej
+        grupie. Większość grup to pojedyncze SMS-y. Największa (40) to automatyczny ham „Sorry, I'll call later”.
+  \item \textbf{Decyzja} -- nie wyrzucamy duplikatów (w prawdziwym świecie spam też przychodzi wiele razy), ale \textbf{cała grupa
+        trafia do jednej części} (train albo val albo test). Dzięki temu nie ma przecieku.
+  \item \textbf{Tabela} -- \% spamu prawie identyczny w każdej części (13,4 / 13,4 / 13,5). To jest \textbf{stratyfikacja}:
+        każda część ma takie proporcje klas jak całość.
+\end{itemize}
+
+\begin{pojecie}{70/15/15, StratifiedGroupKFold, seed 42}
+\textbf{StratifiedGroupKFold} -- gotowe narzędzie ze scikit-learn: tnie dane na 20 kawałków, pilnując naraz proporcji klas
+(\emph{Stratified}) i tego, żeby grupa się nie rozdzieliła (\emph{Group}). 14 kawałków $\to$ train, 3 $\to$ val, 3 $\to$ test.
+\textbf{seed 42} -- „ziarno” losowania; to samo ziarno = zawsze to samo losowanie, więc każdy odtworzy identyczny podział.
+Prowadzący narzucił 42.
+\end{pojecie}
+
+\begin{uwaga}
+\textbf{Jeśli zapytają „skąd wiecie, że nie ma przecieku?”} -- sprawdziliśmy po fakcie, że \textbf{żaden} SMS z walidacji
+ani testu nie ma w treningu odpowiednika z podobieństwem $\geq$ 0,7. Tego nie ma już na slajdzie, ale to jest odpowiedź.
+\end{uwaga}
+
+\subsection{Slajd 4 -- „Co odróżnia spam od hamu (zbiór treningowy)”}
+
+„Zbiór treningowy” w tytule jest ważny: statystyki liczyliśmy \textbf{tylko na train}, żeby test nie wpływał na nasze pomysły.
+Wykres pokazuje, jaki \% hamów i spamów ma daną cechę:
+\begin{itemize}
+  \item \textbf{Numer telefonu ($\geq$ 8 cyfr)} -- 61,5\% spamu, 0,1\% hamu. Prawie idealny sygnał.
+  \item \textbf{Kwota (£, \$, 150p)} -- „wygraj £1000”, „150p za wiadomość” (p = pensy).
+  \item \textbf{Kod krótki (5--6 cyfr)} -- numery premium typu „wyślij STOP na 87121”.
+  \item \textbf{URL / domena} -- linki do stron.
+  \item \textbf{Encja HTML (\texttt{\&lt;} \texttt{\&gt;})} -- tak w HTML-u zapisuje się znaki \texttt{<} i \texttt{>}. Tylko w hamie (wyjaśnienie niżej).
+  \item \textbf{Wielokropek, \texttt{!!!}, emotikony \texttt{:)}} -- częściej w hamie, bo tak piszą ludzie.
+\end{itemize}
+
+Rzeczy, które były w ramkach obok wykresu -- \textbf{warto je powiedzieć na głos}:
+\begin{itemize}
+  \item \textbf{Numery są silne, ale nowe}: w 83,6\% spamów z walidacji z numerem telefonu żaden numer nie pojawił się w treningu.
+        Model uczy się konkretnych słów, więc numer widziany raz nic mu nie da przy nowym numerze. To uzasadnia P1.
+  \item \textbf{Artefakt \texttt{lt}/\texttt{gt}}: większość hamów pochodzi z korpusu NUS (National University of Singapore).
+        Jego autorzy zastąpili liczby napisem \texttt{\&lt;\#\&gt;}. Model widzi z tego słowa \texttt{lt} i \texttt{gt} i uczy się
+        „\texttt{lt} = ham”. To nie cecha języka, tylko ślad po źródle danych (ukryty brak danych).
+  \item \textbf{Interpunkcja to ham, ale B1 jej nie widzi} -- patrz \texttt{token\_pattern} na slajdzie 6.
+\end{itemize}
+
+\subsection{Slajd 5 -- „Trzy hipotezy”}
+
+Zasada z regulaminu: \textbf{model się nie zmienia, zmienia się tylko tekst na wejściu}. Tylko wtedy wiadomo, że różnica
+w wyniku wynika z przetwarzania. \textbf{Hipoteza} = przewidywanie zapisane \emph{przed} eksperymentem, z uzasadnieniem.
+
+\begin{pojecie}{B1 -- model bazowy}
+Surowy tekst $\to$ TF-IDF na słowach $\to$ \textbf{regresja logistyczna}. Mimo nazwy to klasyfikator: każde słowo dostaje wagę
+(„prize” mocno na spam, „lol” na ham), wagi się sumują i wychodzi prawdopodobieństwo spamu 0--1.
+P1--P3 to dokładnie B1, tylko z przerobionym tekstem.
+\end{pojecie}
+
+\textbf{P1 -- maskowanie numerów i kwot.} \textbf{Maskowanie} = zamiana konkretnej wartości na wspólny znacznik:
+\texttt{call 09061234567} $\to$ \texttt{call <PHONE>}, \texttt{£800} $\to$ \texttt{<MONEY>}.
+\textit{Dlaczego:} w \textbf{BoW} (bag of words, „worek słów” -- tabela z TF-IDF, każde słowo to kolumna) każdy numer jest
+osobną kolumną, która występuje w 1--2 SMS-ach, więc model nie ma się z czego nauczyć. Po maskowaniu wszystkie numery to
+jedno słowo \texttt{<PHONE>} obecne w setkach spamów. \textit{Oczekujemy:} wyższego recall i F1.
+\textit{Ryzyko:} ham „oddam ci \$700” dostanie \texttt{<MONEY>} $\to$ fałszywy alarm.
+
+\textbf{P2 -- URL: maskowanie vs usuwanie.} Albo \texttt{<URL>}, albo wycięcie linku. \textit{Dlaczego mały efekt:}
+tokenizer już teraz tnie \texttt{www.getzed.co.uk} na \texttt{www}, \texttt{getzed}, \texttt{co}, \texttt{uk}, a samo
+\texttt{uk} jest w 50 spamach i 1 hamie. \textit{Oczekujemy:} maskowanie $\approx$ bez zmian, usunięcie lekko obniży recall.
+Wariant mierzy, ile model zawdzięcza linkom.
+
+\textbf{P3 -- normalizacja powtórzeń.} \texttt{sooo} $\to$ \texttt{soo}, \texttt{!!!!} $\to$ \texttt{!!}.
+\textit{Oczekujemy:} braku istotnej zmiany -- powtórzenia są rzadkie i podobnie częste w obu klasach. Ewentualny zysk
+w \textbf{teście odporności na literówki} (celowo psujemy tekst testowy i patrzymy, jak spada wynik -- temat tego wymaga).
+Brak efektu jest OK: regulamin mówi wprost, że nie musi być poprawy po każdej operacji.
+
+Najpierw każdy wariant osobno, potem połączenie najlepszych (np. P1 + P2).
+
+\subsection{Slajd 6 -- „Problemy i plan na Milestone 2”}
+
+\textbf{Problemy:}
+\begin{itemize}
+  \item \textbf{Mały test: 113 spamów, 1 SMS $\approx$ 0,9 p.p. recall} -- jeden złapany/przepuszczony spam zmienia recall
+        o 1/113 $\approx$ 0,9 \textbf{punktu procentowego}. Różnice między wariantami mogą być przypadkiem.
+  \item \textbf{65 ze 113 spamów testu jest w grupach duplikatów} -- te kampanie liczą się w teście kilka razy, więc
+        pokażemy też wynik na teście bez kopii (781 unikalnych SMS-ów z 837).
+  \item \textbf{41 spamów testu przypomina kampanie z treningu (cos 0,5--0,7)} -- nie duplikaty, ale podobne; mogą zawyżać
+        wynik, więc pokażemy też wynik tylko na SMS-ach naprawdę nowych (cos $<$ 0,5).
+\end{itemize}
+
+\begin{pojecie}{Sparowany bootstrap}
+Sposób sprawdzenia, czy różnica jest prawdziwa. Losujemy z testu (ze zwracaniem -- ten sam SMS może wypaść kilka razy)
+nowy „test” tej samej wielkości i liczymy wynik B1 i wariantu P \textbf{na tych samych wylosowanych SMS-ach} (stąd
+„sparowany”). Powtarzamy $\geq$ 1000 razy i dostajemy \textbf{przedział ufności} różnicy, np. „P1 lepszy o 2--5 p.p.”.
+Jeśli przedział obejmuje zero -- nie możemy powiedzieć, że wariant pomaga. Prowadzący tego wymaga.
+\end{pojecie}
+
+\textbf{Plan M2:}
+\begin{itemize}
+  \item \textbf{B0} -- najgłupszy „model”: zawsze mówi ham. F1 spamu = 0. Punkt zero.
+  \item \textbf{B1} -- jak wyżej. Ustawienia muszą być jawne:
+\end{itemize}
+
+\begin{pojecie}{lowercase, token\_pattern, C, próg decyzji}
+\textbf{\texttt{lowercase}} -- wszystko na małe litery („FREE” i „free” to to samo słowo).
+
+\textbf{\texttt{token\_pattern} = \texttt{\textbackslash b\textbackslash w\textbackslash w+\textbackslash b}} -- reguła cięcia
+tekstu na słowa: \textbf{token to ciąg co najmniej 2 liter lub cyfr}, cała reszta wypada.
+„Call me!!! :)” $\to$ \texttt{call}, \texttt{me} (wykrzykniki i \texttt{:)} znikają);
+„I am 5 min late” $\to$ \texttt{am}, \texttt{min}, \texttt{late} (\texttt{I} i \texttt{5} -- tylko 1 znak).
+\textbf{Uwaga:} to \emph{nie} jest zamiana \texttt{!!!} na \texttt{!!} -- to P3. \texttt{token\_pattern} to domyślne
+zachowanie modelu bazowego, nie nasze przetwarzanie.
+
+\textbf{C} -- siła \textbf{regularyzacji} regresji logistycznej. Za mała regularyzacja $\to$ model uczy się szczegółów na
+pamięć (overfitting); za duża $\to$ zbyt ogólny. \textbf{Pułapka:} w scikit-learn \textbf{większe C = słabsza regularyzacja}
+(C to odwrotność siły).
+
+\textbf{Próg decyzji} -- od jakiego prawdopodobieństwa mówimy „spam”. Domyślnie 0,5; np. 0,3 = więcej złapanego spamu,
+ale więcej fałszywych alarmów. \textbf{C i próg dobieramy tylko na walidacji}, potem zamrażamy dla P1--P3, żeby porównanie
+było uczciwe.
+\end{pojecie}
+
+\begin{itemize}
+  \item \textbf{P1--P3 na zamrożonym B1}, potem połączenie najlepszych.
+  \item \textbf{Osobny eksperyment: n-gramy słowne vs znakowe} -- opis poniżej.
+\end{itemize}
+
+\begin{pojecie}{n-gramy słowne vs znakowe}
+Chodzi o to, na jakie „kawałki” tniemy tekst przed TF-IDF.
+
+\textbf{Słowne} -- kawałek = całe słowo (lub para słów). „free entry now” $\to$ \texttt{free}, \texttt{entry}, \texttt{now}
+(+ dla 2-gramów: \texttt{free entry}, \texttt{entry now}). \textit{Plus:} czytelne. \textit{Minus:} każda literówka to dla
+modelu zupełnie nowe słowo -- \texttt{free}, \texttt{fr33}, \texttt{freee} to trzy różne kolumny.
+
+\textbf{Znakowe} -- kawałek = 3--5 kolejnych liter. \texttt{freee} ma prawie te same kawałki co \texttt{free}, więc model je
+rozpoznaje. \textit{Plus:} odporne na literówki i spamerskie sztuczki („fr€e”), łapie fragmenty jak \texttt{0906} z numerów
+premium. \textit{Minus:} dużo więcej kolumn, mniej czytelne.
+
+\textbf{Dlaczego osobny eksperyment, a nie wariant P?} Regulamin: P1--P3 muszą mieć \emph{tę samą reprezentację}. Zmiana
+słowa $\to$ znaki to zmiana reprezentacji, nie przetwarzanie tekstu. Spodziewamy się, że znakowe wypadną lepiej w teście
+literówek -- ale to trzeba sprawdzić, nie zakładać.
+\end{pojecie}
+
+\section{Niewygodne pytania, które mogą paść (i co odpowiedzieć)}
+
+\subsection{Tu mamy słabe miejsca -- lepiej powiedzieć to samemu}
+
+\pyt{Spam i ham pochodzą z różnych źródeł. Skąd wiecie, że model uczy się spamu, a nie źródła?}
+Według readme zbioru: spam -- 425 z brytyjskiego forum Grumbletext + 322 z SMS Spam Corpus v.0.1; ham -- 3375 z korpusu NUS
+(Singapur) + 450 z pracy doktorskiej C. Tag + 1002 z SMS Spam Corpus. Model może się uczyć „singapurski angielski = ham”.
+\odp „Tak, to zakłócenie przez źródło. \texttt{lt}/\texttt{gt} jest tego objawem. W analizie błędów sprawdzimy, czy model myli
+się na hamie spoza NUS. Zbiór nie ma kolumny ze źródłem, więc w pełni się tego nie usunie -- wpiszemy to do ograniczeń.”
+
+\pyt{Temat każe porównać koszty fałszywych alarmów i niewykrytego spamu. Gdzie to jest?}
+Na slajdach tego nie ma.
+\odp „W filtrze SMS fałszywy alarm jest droższy -- zgubiona wiadomość od człowieka boli bardziej niż jeden spam. W M2
+pokażemy macierz pomyłek i jak przy różnych progach zmienia się liczba fałszywych alarmów i przepuszczonego spamu.”
+
+\pyt{Wzorce (regexy) na telefon, kwotę, kod krótki pisaliście, patrząc na które dane? Oglądaliście test?}
+\textbf{Do ustalenia w zespole przed prezentacją.} Jeśli tylko train: „Budowaliśmy je na treningu, test nie był oglądany.”
+Jeśli nie: przyznać się i powiedzieć, że reguły zostają zamrożone przed jakimkolwiek wynikiem na teście.
+
+\subsection{Podział i przeciek}
+
+\pyt{TF-IDF do wykrywania duplikatów dopasowaliście na wszystkich danych, z testem. Regulamin mówi: tylko na treningu.}
+\odp „To dotyczy przekształceń będących częścią modelu. Ten TF-IDF służy tylko do kontroli podziału, która według regulaminu
+jest wspólna dla wszystkich wariantów. Nie używa etykiet i nie trafia do modelu. Żeby wykryć duplikat między train a test,
+trzeba widzieć oba zbiory.”
+
+\pyt{Skąd próg 0,7?}
+\odp „Przejrzeliśmy pary przy różnych progach. Poniżej 0,7 sklejają się różne krótkie hamy, powyżej zostają szablony spamu.
+Wybór nie zależał od wyniku żadnego modelu.” Liczby na zapas: rekordów testu z podobieństwem do treningu $\geq$ 0,6 jest 49,
+$\geq$ 0,5 -- 120.
+
+\pyt{Czemu nie usunęliście duplikatów?}
+\odp „Temat każe zachować naturalne proporcje w teście, a spam w praktyce przychodzi wielokrotnie. Grupowanie usuwa przeciek,
+a zachowanie kopii -- rozkład. Raportujemy też wynik po deduplikacji (781 unikalnych).”
+
+\pyt{Grupy łączycie łańcuchowo. Nie powstała jedna wielka grupa z różnych tekstów?}
+\odp „Największa ma 40 rekordów i to ten sam automatyczny ham. Żadnej pary ham--spam w jednej grupie.”
+
+\pyt{83,6\% liczyliście na walidacji -- czy to nie używanie walidacji do hipotez?}
+\odp „Walidacja jest właśnie od podejmowania decyzji. Zakaz dotyczy testu, a test nie wpłynął na żadną hipotezę.”
+
+\subsection{Metryki i statystyka}
+
+\pyt{W walidacji jest tylko 112 spamów. Dobierając C i próg, nie przeuczycie się na walidację?}
+\odp „Ryzyko jest. Dlatego wybieramy z niedużej siatki wartości i zamrażamy próg po B1, zamiast stroić go osobno dla każdego
+P. Porównanie jest wtedy uczciwe.”
+
+\pyt{Co, jeśli bootstrap pokaże przedział obejmujący zero?}
+\odp „Wtedy uczciwie mówimy, że wariant nie daje istotnej poprawy. Regulamin to dopuszcza.”
+
+\pyt{Czemu F1, a nie PR-AUC jako główna?}
+\odp „F1 spamu narzuca temat. PR-AUC raportujemy dodatkowo, bo nie zależy od progu.”
+
+\subsection{Hipotezy}
+
+\pyt{Po co P3, skoro przewidujecie brak efektu?}
+\odp „Temat go sugeruje, brak efektu też jest wynikiem i trzeba go rzetelnie wykazać. Ma też sens w teście literówek.”
+
+\pyt{P1 zamieni „\$700” w hamie na \texttt{<MONEY>}. Nie wzrosną fałszywe alarmy?}
+\odp „To ryzyko jest na slajdzie. Kwota jest w 0,3\% hamu, więc to kilka wiadomości. Sprawdzimy precyzję i pokażemy te
+przypadki w analizie błędów.”
+
+\pyt{Czy maskowanie nie jest przeciekiem etykiety? Numer telefonu prawie zawsze oznacza spam.}
+\odp „Nie. Maskowanie to reguła na samym tekście, bez etykiet, identyczna dla train i test. To, że numer jest silną cechą,
+to prawdziwa własność spamu.”
+
+\pyt{\texttt{lowercase} w B1 to już przetwarzanie. Czemu jest w modelu bazowym?}
+\odp „To domyślne ustawienie \texttt{TfidfVectorizer}. Regulamin wymaga, żeby ustawienia normalizacji były jawne, a nie zerowe.”
+
+\subsection{Ogólne -- każdy musi umieć odpowiedzieć sam}
+
+\pyt{Zbiór jest z 2011 r. Co to mówi o współczesnym spamie?}
+\odp „Niewiele: brytyjskie numery premium, zero emoji, mało linków. Wnioski dotyczą tego korpusu -- wpiszemy to do ograniczeń.”
+
+\pyt{LLM mógł widzieć ten zbiór w treningu.}
+\odp „Tak, jest publiczny od 2011 r. (UCI, Kaggle). Omówimy to w M4.”
+
+\textbf{Definicje do przećwiczenia na głos} (regulamin przewiduje indywidualne pytania): co to IDF; co mierzy cosinus i czemu
+nie zależy od długości tekstu; co to stratyfikacja; co robi seed; czym walidacja różni się od testu; co to precision, recall, F1;
+co robi C.
+
+\section{Do zrobienia przed prezentacją}
+\begin{enumerate}
+  \item Ustalić, \textbf{na jakich danych powstały regexy} w \texttt{patterns.py}.
+  \item Rozważyć dopisanie na slajd 6: \textbf{różne źródła spamu i hamu} (ryzyko), \textbf{koszty fałszywych alarmów}
+        i \textbf{test literówek} (plan M2).
+  \item Przećwiczyć na głos definicje z sekcji wyżej -- każdy z nas.
+\end{enumerate}
+
+\vfill
+{\small\color{ink!60} Notatkę przygotowano z pomocą Claude Code (Anthropic) na podstawie repozytorium projektu;
+liczby pochodzą z \texttt{reports/milestone1/milestone1.md} i \texttt{data/splits/split\_seed42.meta.json}.}
+
+\end{document}
