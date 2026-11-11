@@ -24,6 +24,9 @@ uv sync
 # EDA, bliskie duplikaty, podział i wykresy (albo otwórz notebook w PyCharm / `uv run jupyter lab`)
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda.ipynb
 tectonic reports/milestone1/slides.tex   # slajdy Beamer -> reports/milestone1/slides.pdf
+# B0, B1, warianty P1-P3, bootstrap, literówki -> results/ (Milestone 2)
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/02_baselines.ipynb
+tectonic reports/milestone2/slides.tex
 ```
 
 Podział jest zamrożony: ponowne uruchomienie notebooka sprawdza, że wychodzi identyczny, i nie nadpisuje pliku.
@@ -45,7 +48,13 @@ Konfiguracja: `configs/data.toml`.
 
 ```
 configs/data.toml        źródło danych, seed, proporcje, próg bliskich duplikatów
+configs/experiments.toml ustawienia B1 (TF-IDF, regresja logistyczna), siatka C, bootstrap, literówki
 notebooks/01_eda.ipynb   EDA, bliskie duplikaty, podział, kontrola przecieku, hipotezy (Milestone 1)
+notebooks/02_baselines.ipynb  B0, B1, P1-P3 i połączenia, bootstrap, podzbiory testu, literówki (Milestone 2)
+smsspam/preprocess.py    warianty przetwarzania P1-P3
+smsspam/evaluate.py      metryki, próg z walidacji, bootstrap sparowany
+smsspam/typos.py         kontrolowane literówki do testu odporności
+results/                 predykcje (id, etykieta, wynik), tabele wyników, meta z czasami i sprzętem
 smsspam/data.py          pobranie + weryfikacja SHA-256, wczytanie, złączenie z podziałem
 smsspam/patterns.py      wzorce (telefon, kod krótki, kwota, URL, ...) dla EDA i wariantów P
 data/splits/             zamrożony podział (commitowany)
