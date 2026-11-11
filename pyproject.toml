@@ -2,4 +2,22 @@
 name = "datarepresentationpro"
 version = "0.1.0"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.4",
+    "pandas>=3.1.0",
+    "scikit-learn>=1.9.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.12,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "smsspam"
+module-root = ""
+
+[dependency-groups]
+dev = [
+    "jupyter>=1.1.1",
+]
