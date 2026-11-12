@@ -52,6 +52,7 @@ configs/experiments.toml ustawienia B1 (TF-IDF, regresja logistyczna), siatka C,
 notebooks/01_eda.ipynb   EDA, bliskie duplikaty, podział, kontrola przecieku, hipotezy (Milestone 1)
 notebooks/02_baselines.ipynb  B0, B1, P1-P3 i połączenia, bootstrap, podzbiory testu, literówki (Milestone 2)
 smsspam/preprocess.py    warianty przetwarzania P1-P3
+smsspam/rules.py         B0r: reguła z czterech znaczników z EDA (telefon, kwota, kod krótki, URL)
 smsspam/evaluate.py      metryki, próg z walidacji, bootstrap sparowany
 smsspam/typos.py         kontrolowane literówki do testu odporności
 results/                 predykcje (id, etykieta, wynik), tabele wyników, meta z czasami i sprzętem

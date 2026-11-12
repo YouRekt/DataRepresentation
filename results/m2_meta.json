@@ -1,6 +1,13 @@
 {
   "split": "data/splits/split_seed42.csv",
   "data_sha256": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+  "B0r_markers": [
+    "phone",
+    "money",
+    "shortcode",
+    "url"
+  ],
+  "B0r_k": 1,
   "C_B1": 300.0,
   "selected_on_val": "P2a+P1+P3",
   "thresholds": {
@@ -22,48 +29,48 @@
   ],
   "cost_seconds": {
     "B1": {
-      "fit_s": 0.0212,
-      "predict_s": 0.0057,
+      "fit_s": 0.0213,
+      "predict_s": 0.0058,
       "n_features": 7171
     },
     "P1": {
-      "fit_s": 0.0316,
-      "predict_s": 0.0103,
+      "fit_s": 0.0317,
+      "predict_s": 0.0098,
       "n_features": 6803
     },
     "P2a": {
-      "fit_s": 0.0263,
-      "predict_s": 0.0078,
+      "fit_s": 0.0253,
+      "predict_s": 0.008,
       "n_features": 7109
     },
     "P2b": {
-      "fit_s": 0.0261,
-      "predict_s": 0.0079,
+      "fit_s": 0.0267,
+      "predict_s": 0.0101,
       "n_features": 7108
     },
     "P3": {
-      "fit_s": 0.0283,
-      "predict_s": 0.0088,
+      "fit_s": 0.0299,
+      "predict_s": 0.0104,
       "n_features": 7146
     },
     "P2a+P1": {
-      "fit_s": 0.0383,
-      "predict_s": 0.0128,
+      "fit_s": 0.0381,
+      "predict_s": 0.0123,
       "n_features": 6744
     },
     "P2a+P3": {
-      "fit_s": 0.0344,
-      "predict_s": 0.0119,
+      "fit_s": 0.0328,
+      "predict_s": 0.0106,
       "n_features": 7084
     },
     "P1+P3": {
-      "fit_s": 0.0408,
-      "predict_s": 0.0142,
+      "fit_s": 0.0388,
+      "predict_s": 0.013,
       "n_features": 6778
     },
     "P2a+P1+P3": {
-      "fit_s": 0.0455,
-      "predict_s": 0.0167,
+      "fit_s": 0.049,
+      "predict_s": 0.0181,
       "n_features": 6719
     }
   },

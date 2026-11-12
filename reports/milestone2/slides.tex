@@ -31,37 +31,36 @@
 
 \maketitle
 
-\begin{frame}{B0 i B1: punkt odniesienia}
+\begin{frame}{B0, reguła B0r i B1: punkty odniesienia}
   \begin{columns}[T]
     \begin{column}{0.5\textwidth}
       \begin{itemize}
         \item Zamrożony podział z M1: te same 837 rekordy testowe dla wszystkich wariantów
         \item \textbf{B0}: zawsze \ham{}, F1 spamu = 0
+        \item \textbf{B0r}: spam, gdy jest $\geq$ 1 znacznik z EDA (telefon, kwota, kod krótki, URL); próg $k$ z walidacji
         \item \textbf{B1}: surowy tekst $\to$ TF-IDF $\to$ regresja logistyczna
         \begin{itemize}
           \item małe litery, domyślny \texttt{token\_pattern}, unigramy, L2
-          \item TF-IDF dopasowany tylko do treningu
-          \item \texttt{C} = 300 wybrane na walidacji (PR-AUC)
-          \item próg decyzji: maks.\ F1 na walidacji
+          \item TF-IDF tylko na treningu; \texttt{C} = 300 i próg z walidacji
         \end{itemize}
-        \item Wszystkie ustawienia w \texttt{configs/experiments.toml}
       \end{itemize}
     \end{column}
     \begin{column}{0.46\textwidth}
-      \centering
-      \begin{tabular}{lrr}
+      \centering\small
+      \begin{tabular}{lrrr}
         \toprule
-        test & B0 & B1 \\
+        test & B0 & B0r & B1 \\
         \midrule
-        F1 spam        & 0,000 & \textbf{0,940} \\
-        precision spam & 0,000 & 0,990 \\
-        recall spam    & 0,000 & 0,894 \\
-        macro-F1       & 0,464 & 0,965 \\
-        PR-AUC         & 0,135 & 0,980 \\
-        FP / FN        & 0 / 113 & 1 / 12 \\
+        F1 spam        & 0,000 & 0,936 & \textbf{0,940} \\
+        precision spam & 0,000 & 0,963 & 0,990 \\
+        recall spam    & 0,000 & 0,912 & 0,894 \\
+        PR-AUC         & 0,135 & 0,915 & 0,980 \\
+        FP / FN        & 0 / 113 & 4 / 10 & 1 / 12 \\
+        \midrule
+        F1 spam (val)  & 0,000 & 0,905 & 0,922 \\
         \bottomrule
-      \end{tabular}\\[0.8em]
-      {\small Trening $<$ 0,05 s na CPU (Apple M5 Pro).}
+      \end{tabular}\\[0.6em]
+      {\small B1 $-$ B0r na teście: +0,3 p.p., CI [$-$3,6; +4,2]. Reguła łapie większość spamu, B1 daje mniej fałszywych alarmów i lepszy ranking.}
     \end{column}
   \end{columns}
 \end{frame}
@@ -148,6 +147,7 @@
       \textbf{Problemy}
       \begin{itemize}
         \item Różnice między wariantami to kilka SMS-ów: 1 spam $\approx$ 0,9 p.p.\ recall.
+        \item Prosta reguła jest blisko B1, więc znaczniki niosą większość sygnału; P1 przenosi je do modelu.
         \item Na teście sam P1 wypada lepiej niż wybrane połączenie. Nie zmieniamy wyboru, bo byłby to dobór na teście.
         \item Niewykryte spamy to głównie wiadomości bez numeru i URL (randki, reklamy) albo z numerem w dziwnej formie (\texttt{146tf150p}).
       \end{itemize}
