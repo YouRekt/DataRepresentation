@@ -1,0 +1,308 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{polish}
+\setmainfont{lmsans10-regular.otf}[BoldFont=lmsans10-bold.otf,ItalicFont=lmsans10-oblique.otf,BoldItalicFont=lmsans10-boldoblique.otf]
+\setmonofont{lmmono10-regular.otf}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{ham}{HTML}{2A78D6}
+\definecolor{spam}{HTML}{B4451A}
+\definecolor{ink}{HTML}{1B1F24}
+
+\titleformat{\section}{\Large\bfseries\color{ink}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{spam}}{}{0em}{}
+\setlist{itemsep=2pt,topsep=3pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\newtcolorbox{pojecie}[1]{colback=ink!4,colframe=ink!40,boxrule=0.4pt,arc=2pt,
+  left=6pt,right=6pt,top=3pt,bottom=3pt,fonttitle=\bfseries\small,coltitle=ink,
+  colbacktitle=ink!12,title={#1},breakable}
+\newtcolorbox{uwaga}{colback=spam!6,colframe=spam!60,boxrule=0.4pt,arc=2pt,
+  left=6pt,right=6pt,top=3pt,bottom=3pt,breakable}
+\newcommand{\pyt}[1]{\par\medskip\textbf{\color{spam}P: #1}\par}
+\newcommand{\odp}{\textbf{O:}~}
+
+
+\begin{document}
+
+{\LARGE\bfseries Milestone 2 -- notatka dla zespołu\par}
+\vspace{2pt}
+{\large Co zrobiliśmy, jak czytać wyniki i o co mogą zapytać\par}
+\vspace{4pt}
+{\small Jerzy Czarnecki, Mateusz Małachowski, Sebastian Rydz, Wojciech Wójcik \quad·\quad 12.11.2026}
+
+\section{Przypomnienie z Milestone 1 (30 sekund)}
+
+\begin{itemize}
+  \item 5574 SMS-y, 13,4\% spamu. Metryka główna: \textbf{F1 dla klasy spam} (precision = ile z oznaczonych jako spam to
+        naprawdę spam; recall = ile spamu złapaliśmy; F1 łączy oba).
+  \item Zamrożony podział 70/15/15, seed 42. Bliskie duplikaty zawsze w jednej części, więc nie ma przecieku.
+        \textbf{train} -- nauka, \textbf{val} -- wybieranie ustawień, \textbf{test} -- tylko raportowanie.
+  \item Z EDA: spam prawie zawsze ma numer telefonu, kwotę, kod krótki albo link. Stąd hipotezy:
+        \textbf{H1/P1} maskowanie numerów i kwot pomoże, \textbf{H2/P2} URL: maskowanie bez zmian, usuwanie zaszkodzi,
+        \textbf{H3/P3} normalizacja powtórzeń nic nie zmieni na czystym tekście.
+\end{itemize}
+
+\section{Co zrobiliśmy w Milestone 2 (w jednym akapicie)}
+
+Zbudowaliśmy modele odniesienia (\textbf{B0}, reguła \textbf{B0r}, \textbf{B1}), puściliśmy warianty przetwarzania
+\textbf{P1--P3} na tym samym modelu, połączyliśmy te, które nie szkodziły, i policzyliśmy, czy poprawa jest pewna
+(\textbf{bootstrap}). Dodatkowo sprawdziliśmy wynik na trudniejszych kawałkach testu i po celowym dodaniu literówek.
+Cały eksperyment jest w \texttt{notebooks/02\_baselines.ipynb} i trwa kilka sekund. Ustawienia są w
+\texttt{configs/experiments.toml}, a predykcje i tabele w \texttt{results/}.
+
+\begin{uwaga}
+\textbf{Najważniejsza zasada, którą trzeba umieć powiedzieć:} wszystkie decyzje (\texttt{C}, próg, który wariant jest
+„najlepszy”) podjęliśmy na \textbf{walidacji}. Test policzyliśmy na końcu i niczego na nim nie zmienialiśmy, nawet gdy
+wyszło, że inny wariant byłby na teście lepszy.
+\end{uwaga}
+
+\section{Slajd po slajdzie}
+
+\subsection{Slajd 1 -- tytułowy}
+Bez zmian względem M1, tylko „Milestone 2” i data.
+
+\subsection{Slajd 2 -- „B0, reguła B0r i B1: punkty odniesienia”}
+
+Punkt odniesienia (\emph{baseline}) to wynik, z którym porównujemy wszystko inne. Mamy trzy:
+
+\begin{pojecie}{B0 -- klasa większościowa}
+„Model”, który zawsze mówi ham. Ma 86,5\% trafień, ale nie łapie ani jednego spamu, więc F1 spamu = 0.
+Wymaga go regulamin. Pokazuje, że accuracy w tym zadaniu nic nie znaczy.
+\end{pojecie}
+
+\begin{pojecie}{B0r -- reguła ze znaczników (pomysł prowadzącego)}
+Bez żadnej nauki: SMS jest spamem, jeśli ma \textbf{co najmniej jeden} z czterech znaczników z EDA -- numer telefonu,
+kwotę, kod krótki albo URL (\texttt{smsspam/rules.py}). „Co najmniej jeden” wybraliśmy na walidacji spośród 1--4.
+W treningu 87\% SMS-ów z jednym znacznikiem i 100\% z dwoma lub więcej to spam.
+\end{pojecie}
+
+\begin{pojecie}{B1 -- model bazowy}
+Surowy tekst $\to$ TF-IDF na słowach $\to$ regresja logistyczna. Bez czyszczenia; jawne ustawienia: małe litery, domyślny
+\texttt{token\_pattern} (token = $\geq$ 2 litery lub cyfry, interpunkcja wypada), pojedyncze słowa (unigramy).
+TF-IDF dopasowany tylko do treningu.
+\begin{itemize}
+  \item \textbf{\texttt{C} = 300} -- wybrane na walidacji. Duże C = słaba regularyzacja. Kryterium to PR-AUC, a nie F1,
+        bo F1 przy 112 spamach w walidacji mocno skacze. PR-AUC jest prawie takie samo dla każdego C $\geq$ 10
+        (0,960--0,962), więc ten wybór niewiele zmienia.
+  \item \textbf{Próg decyzji 0,36} -- model daje prawdopodobieństwo spamu; powyżej progu mówimy „spam”. Próg wybraliśmy
+        na walidacji tak, żeby F1 było najwyższe.
+\end{itemize}
+\end{pojecie}
+
+\begin{pojecie}{PR-AUC}
+Pole pod krzywą precision--recall. Mówi, jak dobrze model \emph{szereguje} wiadomości (spam wyżej niż ham), niezależnie
+od progu. 1 = idealnie; dla losowego szeregowania równa się udziałowi spamu (0,135 -- stąd wynik B0).
+Uzupełnia F1, które zależy od jednego wybranego progu.
+\end{pojecie}
+
+\textbf{Jak czytać tabelę.} FP (\emph{false positive}) = ham oznaczony jako spam, czyli fałszywy alarm.
+FN (\emph{false negative}) = spam, którego nie złapaliśmy.
+
+\begin{itemize}
+  \item B1 na teście: F1 0,940, tylko 1 fałszywy alarm na 724 hamy i 12 przepuszczonych spamów ze 113.
+  \item \textbf{Reguła jest prawie tak dobra jak B1}: 0,936 na teście. Różnica +0,3 p.p. z przedziałem [$-$3,6; +4,2],
+        czyli na teście ich nie odróżnimy. Na walidacji B1 wygrywa wyraźniej (0,922 vs 0,905).
+  \item Gdzie B1 jest lepszy: \textbf{mniej fałszywych alarmów} (1 vs 4) i \textbf{lepszy ranking} (PR-AUC 0,980 vs 0,915).
+  \item \textbf{Wniosek do powiedzenia na głos:} cztery znaczniki z EDA niosą większość sygnału. P1 robi to samo, tylko
+        wewnątrz modelu.
+\end{itemize}
+
+\subsection{Slajd 3 -- „P1--P3: ten sam wektoryzator, to samo C, inny tekst”}
+
+Zasada z regulaminu: przy porównaniu przetwarzania \textbf{model i ustawienia się nie zmieniają}, zmienia się tylko tekst.
+
+\begin{itemize}
+  \item \textbf{P1}: \texttt{09061234567} $\to$ \texttt{\_phone\_}, \texttt{£800} $\to$ \texttt{\_money\_},
+        \texttt{87121} $\to$ \texttt{\_shortcode\_}.
+  \item \textbf{P2a}: link $\to$ \texttt{\_url\_}. \textbf{P2b}: link usunięty.
+  \item \textbf{P3}: \texttt{sooo} $\to$ \texttt{soo}, \texttt{!!!!} $\to$ \texttt{!!}.
+\end{itemize}
+
+\begin{pojecie}{Dlaczego \texttt{\_phone\_}, a nie \texttt{<PHONE>} jak w M1?}
+Tokenizer B1 wyciąłby z \texttt{<PHONE>} zwykłe słowo \texttt{phone}, które naprawdę występuje w SMS-ach (``call my phone'').
+Podkreślnik liczy się jako litera, więc \texttt{\_phone\_} zostaje jednym, osobnym tokenem.
+\end{pojecie}
+
+\begin{pojecie}{Dlaczego próg jest inny dla każdego wariantu?}
+W M1 planowaliśmy zamrozić próg z B1. Ale maskowanie zmienia rozkład prawdopodobieństw (np. P1 daje wyższe wyniki
+spamowi), więc próg B1 byłby dla P1 po prostu źle ustawiony. Próg to reguła decyzji, a nie hiperparametr modelu, i dalej
+wybieramy go \textbf{tylko na walidacji}. Zamrożone są: wektoryzator i \texttt{C}. Dla uczciwości w notebooku jest kolumna
+„F1 @ próg B1” -- P1 wygrywa także przy progu B1 (0,954 vs 0,922 na walidacji).
+\end{pojecie}
+
+\textbf{Wyniki pojedynczo} (walidacja $\to$ test, F1 spamu; B1: 0,922 $\to$ 0,940):
+\begin{itemize}
+  \item \textbf{P1}: 0,959 $\to$ 0,959. Najlepszy. Mniej przepuszczonego spamu (FN 12 $\to$ 8), bez nowych fałszywych alarmów.
+        Zgodne z H1.
+  \item \textbf{P2a}: 0,926 $\to$ 0,944. Prawie bez zmian. Zgodne z H2.
+  \item \textbf{P2b}: 0,906 $\to$ 0,919. Gorzej: model korzysta z kawałków domen (\texttt{uk}, \texttt{www}). Zgodne z H2.
+  \item \textbf{P3}: 0,922 $\to$ 0,940 -- na teście \emph{dokładnie te same} predykcje co B1. Zgodne z H3.
+\end{itemize}
+
+\textbf{Połączenie.} Łączymy warianty, które na walidacji nie pogorszyły ani F1, ani PR-AUC: P2a, P1, P3 (P2b odpada).
+Kolejność: najpierw URL, potem numery (żeby cyfry w linku nie zostały zamaskowane jako numer), na końcu powtórzenia.
+Na walidacji wygrało \textbf{P2a+P1+P3}: 0,968, precision 1,000. Na teście: 0,954, 0 fałszywych alarmów, 10 FN.
+
+\begin{uwaga}
+\textbf{Pułapka, o którą mogą zapytać:} na teście \emph{sam P1} (0,959) wypada lepiej niż wybrane połączenie (0,954).
+Nie zmieniamy wyboru, bo to byłby dobór na teście -- dokładnie to, czego nie wolno. Do tego P2a+P1 i P2a+P1+P3 remisują
+na walidacji (F1 identyczne, PR-AUC różni się o 0,0001), więc P3 w połączeniu nic nie wnosi.
+\end{uwaga}
+
+\subsection{Slajd 4 -- „Czy poprawa jest pewna? Bootstrap sparowany”}
+
+\begin{pojecie}{Bootstrap sparowany i przedział ufności (CI)}
+2000 razy losujemy ze zwracaniem nowy „test” z 837 SMS-ów testowych i liczymy F1 obu modeli \textbf{na tych samych}
+wylosowanych SMS-ach. Różnice F1 układają się w rozkład; środkowe 95\% to \textbf{przedział ufności}.
+\textbf{Jeśli przedział obejmuje 0, nie możemy powiedzieć, że wariant pomaga} -- różnica może być przypadkiem.
+\end{pojecie}
+
+\textbf{Jak czytać wykres.} Każdy wiersz to jeden wariant. Kropka = różnica F1 względem B1 na całym teście, kreska = 95\%
+przedział. Pionowa linia to zero. Pomarańczowy = wariant wybrany na walidacji. Ciemna kreska: losujemy pojedyncze SMS-y;
+jasna (zwykle trochę szersza): losujemy całe grupy bliskich duplikatów, bo kopie jednej kampanii nie są niezależne.
+
+\begin{itemize}
+  \item \textbf{P1}: +1,9 p.p., CI [$-$1,0; +5,2] -- prawdopodobnie pomaga, ale \textbf{nie jest to pewne}. Różnica to
+        4 złapane spamy więcej, a 1 spam to ok. 0,9 p.p. recall.
+  \item \textbf{P2b}: $-$2,0 p.p., CI [$-$4,4; $-$0,5] -- jedyny wynik, który jest wyraźny: \textbf{usuwanie linków szkodzi}.
+        Przy losowaniu grup przedział dotyka zera, więc i tu ostrożnie.
+  \item \textbf{P3}: 0 -- kropka bez kreski, bo predykcje są identyczne.
+  \item \textbf{Wybrany wariant}: +1,4 p.p., CI [$-$1,0; +4,1].
+\end{itemize}
+
+To \textbf{nie jest porażka}. Regulamin mówi wprost, że brak pewnej poprawy trzeba rzetelnie wykazać, a nie ukrywać.
+Test ma tylko 113 spamów -- za mało, żeby udowodnić różnicę rzędu 2 p.p.
+
+\subsection{Slajd 5 -- „Trudniejsze warunki: podzbiory testu i literówki”}
+
+\textbf{Podzbiory testu} (obiecane w M1):
+\begin{itemize}
+  \item \textbf{bez duplikatów} -- z każdego powtórzonego tekstu zostaje jedna kopia (781 SMS-ów). Wyniki prawie te same,
+        więc powtarzane kampanie nie zawyżają wyniku.
+  \item \textbf{podobieństwo $<$ 0,5} -- wyrzucamy SMS-y przypominające kampanie z treningu (zostaje 717 SMS-ów, 72 spamy).
+        Oba modele tracą 3--4 p.p. (B1 0,902, wybrany 0,925). Czyli \textbf{część wyniku to rozpoznawanie znanych kampanii}.
+        Przewaga wariantu nad B1 zostaje.
+\end{itemize}
+
+\begin{pojecie}{Test odporności na literówki}
+Wymóg tematu. Bierzemy SMS-y z testu i psujemy losowo 10\% albo 20\% słów (co najmniej 3-literowych) jedną z czterech
+edycji: usunięcie litery, zamiana dwóch sąsiednich, podmiana na losową, podwojenie (\texttt{smsspam/typos.py}). Modele są
+te same (uczone na czystym tekście), progi też. Losowanie literówek powtarzamy z 3 różnymi ziarnami i podajemy średnią
+-- regulamin wymaga 3 uruchomień dla rzeczy losowych.
+\end{pojecie}
+
+\begin{itemize}
+  \item B1: 0,940 $\to$ 0,936 (10\%) $\to$ 0,917 (20\%).
+  \item P3: przy 20\% 0,922, czyli +0,5 p.p. nad B1. Odchylenie między ziarnami to ok. 0,01, więc \textbf{to jest w szumie}.
+  \item Wybrany wariant: 0,954 $\to$ 0,949 $\to$ 0,947 -- \textbf{prawie się nie psuje}. Powód: literówki dotyczą liter,
+        a maski numerów i kwot działają na cyfrach, więc ten sygnał przetrwa.
+\end{itemize}
+
+\subsection{Slajd 6 -- „Problemy i plan na Milestone 3”}
+
+\textbf{Problemy:}
+\begin{itemize}
+  \item Różnice to kilka SMS-ów, stąd szerokie przedziały.
+  \item Reguła jest blisko B1 -- nie trzeba tego ukrywać; to argument za P1.
+  \item Na teście sam P1 jest lepszy niż wybrane połączenie -- patrz ramka wyżej.
+  \item \textbf{Czego model nie łapie} (błędy B1 na walidacji): spam bez numeru i linku (zaczepki randkowe, reklama
+        Burger Kinga) albo z numerem w dziwnej formie (\texttt{146tf150p}, \texttt{3POUND}). Fałszywe alarmy to hamy ze
+        słowami typu FREE/SMS albo z domeną.
+\end{itemize}
+
+\textbf{Plan M3:}
+\begin{itemize}
+  \item \textbf{Stabilność P1} -- powtórzona walidacja krzyżowa (z grupami) na train+val: wiele podziałów zamiast jednego,
+        żeby zobaczyć, czy P1 pomaga za każdym razem. Bez dotykania testu.
+  \item \textbf{P4} -- dekodowanie \texttt{\&lt;\#\&gt;} (artefakt korpusu NUS z M1) jako analiza wrażliwości.
+  \item \textbf{n-gramy słowne vs znakowe} -- osobny eksperyment, bo zmienia reprezentację.
+  \item \textbf{Model M} -- zamrożone embeddingi zdań (gotowa sieć zamienia SMS na wektor znaczenia) + regresja
+        logistyczna. Strojenie tylko na walidacji.
+\end{itemize}
+
+\section{Niewygodne pytania, które mogą paść (i co odpowiedzieć)}
+
+\subsection{Protokół}
+
+\pyt{Wybraliście P2a+P1+P3, a na teście P1 jest lepszy. Czemu nie bierzecie P1?}
+\odp „Bo wybór musi zapaść na walidacji. Gdybyśmy teraz zmienili zdanie, test przestałby być niezależnym sprawdzianem.
+Różnica 0,5 p.p. to zresztą mniej niż jeden SMS w F1 i mieści się w szumie.”
+
+\pyt{W M1 mówiliście, że próg zamrozicie z B1. Teraz każdy wariant ma swój.}
+\odp „Zmieniliśmy to świadomie: maskowanie przesuwa prawdopodobieństwa, więc wspólny próg krzywdziłby warianty P.
+Próg dalej wybieramy tylko na walidacji, a \texttt{C} i wektoryzator są zamrożone. W notebooku jest też wynik przy progu
+B1 -- wnioski się nie zmieniają.”
+
+\pyt{C = 300 to skraj siatki?}
+\odp „Nie, siatka idzie do 3000. Poza tym PR-AUC jest płaskie od C = 10, więc wybór C prawie nic nie zmienia.”
+
+\pyt{Czemu C wybieracie po PR-AUC, skoro metryką główną jest F1?}
+\odp „F1 zależy od progu i przy 112 spamach walidacji skacze o kilka punktów od jednego SMS-a. PR-AUC jest stabilniejsze.
+F1 optymalizujemy przy wyborze progu.”
+
+\pyt{Regresja logistyczna jest losowa? Regulamin każe robić 3 uruchomienia.}
+\odp „Solver \texttt{liblinear} dla L2 jest deterministyczny: ten sam wynik za każdym razem. Losowe są literówki i bootstrap --
+literówki mają 3 ziarna, bootstrap ma stałe ziarno 42 i 2000 losowań.”
+
+\subsection{Reguła B0r}
+
+\pyt{Reguła jest prawie tak dobra jak model. Po co model?}
+\odp „Na walidacji model jest lepszy, a na teście ma mniej fałszywych alarmów (1 vs 4) i dużo lepszy ranking (PR-AUC 0,98 vs 0,92),
+więc można przesuwać próg. Reguła tego nie umie. Do tego P1 łączy obie rzeczy i jest lepszy od obu.”
+
+\pyt{Czy reguła nie jest dopasowana do danych? Regexy pisaliście, patrząc na dane.}
+\odp „Na treningu, w ramach EDA w M1. Jedyny parametr reguły (ile znaczników) wybraliśmy na walidacji.”
+(To samo pytanie było w notatce z M1 -- odpowiedź musi być spójna.)
+
+\subsection{Koszty błędów}
+
+\pyt{Temat każe porównać koszty fałszywych alarmów i niewykrytego spamu.}
+\odp „W filtrze SMS zgubiona wiadomość od człowieka boli bardziej niż przepuszczony spam. Na teście B1 robi 1 fałszywy alarm
+na 724 hamy, wybrany wariant 0 -- i jednocześnie łapie więcej spamu. Reguła robi 4. Pełną analizę z różnymi progami
+pokażemy w M3/M4.”
+
+\subsection{Liczby na zapas}
+
+\begin{center}
+\small
+\begin{tabular}{lrrrrr}
+  \toprule
+  test (837 SMS-ów, 113 spamów) & F1 spam & precision & recall & PR-AUC & FP / FN \\
+  \midrule
+  B0                 & 0,000 & 0,000 & 0,000 & 0,135 & 0 / 113 \\
+  B0r (reguła)       & 0,936 & 0,963 & 0,912 & 0,915 & 4 / 10 \\
+  B1                 & 0,940 & 0,990 & 0,894 & 0,980 & 1 / 12 \\
+  P1                 & 0,959 & 0,991 & 0,929 & 0,982 & 1 / 8 \\
+  P2a                & 0,944 & 0,990 & 0,903 & 0,980 & 1 / 11 \\
+  P2b                & 0,919 & 0,990 & 0,858 & 0,980 & 1 / 16 \\
+  P3                 & 0,940 & 0,990 & 0,894 & 0,981 & 1 / 12 \\
+  P2a+P1+P3 (wybrany) & 0,954 & 1,000 & 0,912 & 0,982 & 0 / 10 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Czas: trening jednego wariantu $<$ 0,05 s, predykcja całego testu ok. 0,01 s, CPU (Apple M5 Pro), bez GPU.
+
+\textbf{Definicje do przećwiczenia na głos:} baseline; FP i FN; próg decyzji; PR-AUC; co robi C; czym jest przedział
+ufności i co znaczy, że obejmuje zero; dlaczego bootstrap jest sparowany; dlaczego nie wybieramy na teście.
+
+\section{Do zrobienia przed prezentacją}
+\begin{enumerate}
+  \item Każdy przeczytać ramki „Pułapka” i „Dlaczego próg jest inny” -- te pytania są najbardziej prawdopodobne.
+  \item Ustalić, kto mówi który slajd (zalecane 3--5 slajdów; mamy 5 merytorycznych).
+  \item Otworzyć notebook \texttt{02\_baselines.ipynb} przed prezentacją, gdyby trzeba było pokazać tabelę lub błędy.
+\end{enumerate}
+
+\vfill
+{\small\color{ink!60} Liczby pochodzą z \texttt{notebooks/02\_baselines.ipynb} oraz plików w \texttt{results/}.}
+
+\end{document}
