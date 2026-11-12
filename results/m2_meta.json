@@ -1,0 +1,89 @@
+{
+  "split": "data/splits/split_seed42.csv",
+  "data_sha256": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+  "B0r_markers": [
+    "phone",
+    "money",
+    "shortcode",
+    "url"
+  ],
+  "B0r_k": 1,
+  "C_B1": 300.0,
+  "selected_on_val": "P2a+P1+P3",
+  "thresholds": {
+    "B1": 0.36138632089981365,
+    "P1": 0.44819239297445806,
+    "P2a": 0.37562040682944514,
+    "P2b": 0.4851683852335673,
+    "P3": 0.36101642223666897,
+    "P2a+P1": 0.4875790560193948,
+    "P2a+P3": 0.37618257778147046,
+    "P1+P3": 0.45133345366589617,
+    "P2a+P1+P3": 0.4913791483706203
+  },
+  "combinations": [
+    "P2a+P1",
+    "P2a+P3",
+    "P1+P3",
+    "P2a+P1+P3"
+  ],
+  "cost_seconds": {
+    "B1": {
+      "fit_s": 0.0213,
+      "predict_s": 0.0058,
+      "n_features": 7171
+    },
+    "P1": {
+      "fit_s": 0.0317,
+      "predict_s": 0.0098,
+      "n_features": 6803
+    },
+    "P2a": {
+      "fit_s": 0.0253,
+      "predict_s": 0.008,
+      "n_features": 7109
+    },
+    "P2b": {
+      "fit_s": 0.0267,
+      "predict_s": 0.0101,
+      "n_features": 7108
+    },
+    "P3": {
+      "fit_s": 0.0299,
+      "predict_s": 0.0104,
+      "n_features": 7146
+    },
+    "P2a+P1": {
+      "fit_s": 0.0381,
+      "predict_s": 0.0123,
+      "n_features": 6744
+    },
+    "P2a+P3": {
+      "fit_s": 0.0328,
+      "predict_s": 0.0106,
+      "n_features": 7084
+    },
+    "P1+P3": {
+      "fit_s": 0.0388,
+      "predict_s": 0.013,
+      "n_features": 6778
+    },
+    "P2a+P1+P3": {
+      "fit_s": 0.049,
+      "predict_s": 0.0181,
+      "n_features": 6719
+    }
+  },
+  "hardware": {
+    "machine": "arm64",
+    "system": "Darwin",
+    "cpu": "Apple M5 Pro"
+  },
+  "environment": {
+    "python": "3.14.8",
+    "numpy": "2.5.4",
+    "pandas": "3.1.0",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1"
+  }
+}
