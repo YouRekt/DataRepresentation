@@ -22,48 +22,48 @@
   ],
   "cost_seconds": {
     "B1": {
-      "fit_s": 0.0213,
+      "fit_s": 0.0212,
       "predict_s": 0.0057,
       "n_features": 7171
     },
     "P1": {
-      "fit_s": 0.0327,
-      "predict_s": 0.0105,
+      "fit_s": 0.0316,
+      "predict_s": 0.0103,
       "n_features": 6803
     },
     "P2a": {
-      "fit_s": 0.0268,
-      "predict_s": 0.008,
+      "fit_s": 0.0263,
+      "predict_s": 0.0078,
       "n_features": 7109
     },
     "P2b": {
-      "fit_s": 0.0262,
-      "predict_s": 0.008,
+      "fit_s": 0.0261,
+      "predict_s": 0.0079,
       "n_features": 7108
     },
     "P3": {
-      "fit_s": 0.0297,
-      "predict_s": 0.0097,
+      "fit_s": 0.0283,
+      "predict_s": 0.0088,
       "n_features": 7146
     },
     "P2a+P1": {
-      "fit_s": 0.0399,
-      "predict_s": 0.0156,
+      "fit_s": 0.0383,
+      "predict_s": 0.0128,
       "n_features": 6744
     },
     "P2a+P3": {
-      "fit_s": 0.0371,
-      "predict_s": 0.0117,
+      "fit_s": 0.0344,
+      "predict_s": 0.0119,
       "n_features": 7084
     },
     "P1+P3": {
-      "fit_s": 0.0416,
-      "predict_s": 0.0144,
+      "fit_s": 0.0408,
+      "predict_s": 0.0142,
       "n_features": 6778
     },
     "P2a+P1+P3": {
-      "fit_s": 0.0474,
-      "predict_s": 0.0171,
+      "fit_s": 0.0455,
+      "predict_s": 0.0167,
       "n_features": 6719
     }
   },
